@@ -5,18 +5,18 @@ set -euo pipefail
 readonly APP_ID="veloshot"
 readonly PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly PYTHON_BIN="${PYTHON:-python3}"
-readonly DATA_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}"
-readonly BIN_HOME="${XDG_BIN_HOME:-${HOME}/.local/bin}"
-readonly INSTALL_ROOT="${DATA_HOME}/${APP_ID}"
+readonly INSTALL_ROOT="/opt/${APP_ID}"
 readonly VENV_DIR="${INSTALL_ROOT}/venv"
-readonly COMMAND_PATH="${BIN_HOME}/${APP_ID}"
-readonly DESKTOP_PATH="${DATA_HOME}/applications/${APP_ID}.desktop"
-readonly ICON_PATH="${DATA_HOME}/icons/hicolor/scalable/apps/${APP_ID}.svg"
+readonly COMMAND_PATH="/usr/local/bin/${APP_ID}"
+readonly DESKTOP_PATH="/usr/local/share/applications/${APP_ID}.desktop"
+readonly ICON_PATH="/usr/local/share/icons/hicolor/scalable/apps/${APP_ID}.svg"
 
 fail() {
     printf 'Error: %s\n' "$*" >&2
     exit 1
 }
+
+[[ "${EUID}" -eq 0 ]] || fail "Ejecuta el instalador con: sudo ./install.sh"
 
 command -v "${PYTHON_BIN}" >/dev/null 2>&1 || \
     fail "No se encontró ${PYTHON_BIN}. Instala Python 3.10 o superior."
@@ -25,14 +25,21 @@ command -v "${PYTHON_BIN}" >/dev/null 2>&1 || \
     fail "VeloShot requiere Python 3.10 o superior."
 
 printf 'Instalando VeloShot en %s...\n' "${INSTALL_ROOT}"
-mkdir -p "${INSTALL_ROOT}" "${BIN_HOME}" "$(dirname -- "${DESKTOP_PATH}")" \
+mkdir -p "${INSTALL_ROOT}" "$(dirname -- "${COMMAND_PATH}")" "$(dirname -- "${DESKTOP_PATH}")" \
     "$(dirname -- "${ICON_PATH}")"
 
 if ! "${PYTHON_BIN}" -m venv "${VENV_DIR}"; then
     fail "No se pudo crear el entorno virtual. En Debian/Ubuntu instala python3-venv."
 fi
 
-"${VENV_DIR}/bin/python" -m pip install --upgrade "${PROJECT_DIR}"
+build_dir="$(mktemp -d)"
+trap 'rm -rf -- "${build_dir}"' EXIT
+cp "${PROJECT_DIR}/pyproject.toml" "${PROJECT_DIR}/README.md" \
+    "${PROJECT_DIR}/LICENSE" "${build_dir}/"
+cp -a "${PROJECT_DIR}/veloshot" "${build_dir}/veloshot"
+"${VENV_DIR}/bin/python" -m pip install --upgrade "${build_dir}"
+rm -rf -- "${build_dir}"
+trap - EXIT
 
 if ! QT_QPA_PLATFORM=offscreen "${VENV_DIR}/bin/python" -c \
     'from PySide6.QtGui import QImage; import veloshot'; then
@@ -71,6 +78,4 @@ fi
 printf '\nVeloShot quedó instalado.\n'
 printf 'Comando: %s launcher\n' "${COMMAND_PATH}"
 printf 'También puedes abrirlo desde el menú de aplicaciones.\n'
-if [[ ":${PATH}:" != *":${BIN_HOME}:"* ]]; then
-    printf 'Aviso: añade %s a PATH para usar "veloshot" directamente en nuevas terminales.\n' "${BIN_HOME}"
-fi
+printf 'i3 puede ejecutarlo directamente como "veloshot" o mediante su ruta absoluta.\n'

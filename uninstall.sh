@@ -3,12 +3,15 @@
 set -euo pipefail
 
 readonly APP_ID="veloshot"
-readonly DATA_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}"
-readonly BIN_HOME="${XDG_BIN_HOME:-${HOME}/.local/bin}"
-readonly INSTALL_ROOT="${DATA_HOME}/${APP_ID}"
-readonly COMMAND_PATH="${BIN_HOME}/${APP_ID}"
-readonly DESKTOP_PATH="${DATA_HOME}/applications/${APP_ID}.desktop"
-readonly ICON_PATH="${DATA_HOME}/icons/hicolor/scalable/apps/${APP_ID}.svg"
+readonly INSTALL_ROOT="/opt/${APP_ID}"
+readonly COMMAND_PATH="/usr/local/bin/${APP_ID}"
+readonly DESKTOP_PATH="/usr/local/share/applications/${APP_ID}.desktop"
+readonly ICON_PATH="/usr/local/share/icons/hicolor/scalable/apps/${APP_ID}.svg"
+
+if [[ "${EUID}" -ne 0 ]]; then
+    printf 'Error: ejecuta el desinstalador con: sudo ./uninstall.sh\n' >&2
+    exit 1
+fi
 
 if [[ -L "${COMMAND_PATH}" ]]; then
     command_target="$(readlink -f -- "${COMMAND_PATH}" 2>/dev/null || true)"

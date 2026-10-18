@@ -19,28 +19,36 @@ Descarga o clona el repositorio y ejecuta el instalador desde su carpeta:
 ```bash
 git clone https://github.com/prezdev88/veloshot.git
 cd veloshot
-./install.sh
+sudo ./install.sh
 ```
 
-El instalador trabaja únicamente dentro de tu usuario y no necesita `sudo`. Crea un entorno aislado en `~/.local/share/veloshot`, instala el comando en `~/.local/bin/veloshot` y añade VeloShot al menú de aplicaciones con su icono. Después puedes borrar la carpeta del código fuente y ejecutar:
+El instalador crea un entorno aislado en `/opt/veloshot`, instala el comando global `/usr/local/bin/veloshot` y añade VeloShot al menú de aplicaciones con su icono. `/usr/local/bin` forma parte del `PATH` habitual de i3, por lo que no depende de la configuración de una terminal. Después puedes borrar la carpeta del código fuente y ejecutar:
 
 ```bash
 veloshot launcher
 ```
 
-También puedes buscar **VeloShot** en el menú de aplicaciones. Si la terminal todavía no reconoce el comando, abre una sesión nueva o añade `~/.local/bin` a `PATH`; la entrada del menú utiliza una ruta absoluta y seguirá funcionando.
+También puedes buscar **VeloShot** en el menú de aplicaciones.
 
-En Debian o Ubuntu, si faltan las bibliotecas de Qt, instálalas antes de repetir `./install.sh`:
+Para asignarlo a la tecla Impr Pant en i3, usa el ejecutable global o su ruta absoluta:
+
+```text
+bindsym Print exec --no-startup-id /usr/local/bin/veloshot gui
+```
+
+El instalador no modifica la configuración de i3. Después de editarla, recárgala con `$mod+Shift+c`.
+
+En Debian o Ubuntu, si faltan las bibliotecas de Qt, instálalas antes de repetir `sudo ./install.sh`:
 
 ```bash
 sudo apt update
 sudo apt install python3 python3-venv libdbus-1-3 libegl1 libfontconfig1 libgl1 libglib2.0-0 libxkbcommon0
 ```
 
-Para actualizar una instalación existente, descarga los cambios del repositorio y vuelve a ejecutar `./install.sh`. Para desinstalarla:
+Para actualizar una instalación existente, descarga los cambios del repositorio y vuelve a ejecutar `sudo ./install.sh`. Para desinstalarla:
 
 ```bash
-./uninstall.sh
+sudo ./uninstall.sh
 ```
 
 El desinstalador conserva las preferencias personales de VeloShot.
