@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.venv/
+*.log
+
+# Local reverse-engineering evidence and generated verification artifacts.
+/analysis/
+/2026-10-15_00-01-52.png

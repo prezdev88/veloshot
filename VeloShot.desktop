@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=VeloShot
+Comment=Captura y anota la pantalla
+Exec=veloshot launcher
+Icon=veloshot
+Terminal=false
+Categories=Graphics;Qt;
+StartupWMClass=VeloShot
