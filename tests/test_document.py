@@ -48,9 +48,9 @@ class DocumentTests(unittest.TestCase):
     def test_hidpi_export_keeps_physical_resolution_and_ratio(self):
         background = QImage(200, 160, QImage.Format.Format_ARGB32)
         background.setDevicePixelRatio(2)
-        for y in range(background.height()):
-            for x in range(background.width()):
-                background.setPixelColor(x, y, QColor(x, y, 37))
+        background.fill(QColor("white"))
+        background.setPixelColor(20, 30, QColor("red"))
+        background.setPixelColor(59, 49, QColor("blue"))
         document = Document(background, QRect(10, 15, 20, 10))
 
         exported = document.export()
