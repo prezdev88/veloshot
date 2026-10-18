@@ -139,6 +139,7 @@ La captura está implementada para **X11**, como la sesión local accesible medi
 - Capturas fijadas sobre el escritorio: arrastrar, girar, cambiar opacidad, copiar, guardar y cerrar.
 - Lanzador con retardo, bandeja, configuración persistente y edición de archivos.
 - CLI con monitores, regiones, última selección, PNG en stdout y aceptación al seleccionar.
+- Conservación de la resolución física en pantallas HiDPI, incluidas escalas fraccionarias.
 
 | Acción durante la captura | Tecla |
 | --- | --- |
@@ -180,7 +181,7 @@ La configuración propia usa `QSettings("VeloShot", "VeloShot")`. Al iniciar por
 
 ## Verificación y análisis
 
-Se verificaron **57 pruebas automatizadas** y **11 escenarios del ejecutable en una pantalla X11 virtual**, incluida la transferencia de la imagen del portapapeles entre procesos. También se comprobó el selector con dos pantallas X11 virtuales de distinta resolución: captura los píxeles elegidos, abre el editor en la pantalla correspondiente y copia su imagen.
+Se verificaron **61 pruebas automatizadas** y **11 escenarios del ejecutable en una pantalla X11 virtual**, incluida la transferencia de la imagen del portapapeles entre procesos. También se comprobó el selector con dos pantallas X11 virtuales de distinta resolución: captura los píxeles elegidos, abre el editor en la pantalla correspondiente y copia su imagen. Las capturas HiDPI se validaron a escala 2× y con escalado fraccionario, conservando su resolución física sin reducirlas al tamaño lógico.
 
 También se verificó el lanzador con i3 en un escritorio virtual: el editor cubre toda la pantalla, copia la captura completa y permite seleccionar un área cerca del borde inferior derecho. El editor de captura evita que el gestor de ventanas lo reduzca a un mosaico.
 

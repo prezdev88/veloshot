@@ -5,7 +5,7 @@ import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QPointF, QRect
+from PySide6.QtCore import QPointF, QRect, QSize
 from PySide6.QtGui import QColor, QImage
 from PySide6.QtWidgets import QApplication
 
@@ -44,6 +44,48 @@ class DocumentTests(unittest.TestCase):
         self.assertEqual(exported.size(), QRect(0, 0, 25, 15).size())
         self.assertEqual(exported.pixelColor(0, 0), background.pixelColor(0, 65))
         self.assertEqual(exported.pixelColor(24, 14), background.pixelColor(24, 79))
+
+    def test_hidpi_export_keeps_physical_resolution_and_ratio(self):
+        background = QImage(200, 160, QImage.Format.Format_ARGB32)
+        background.setDevicePixelRatio(2)
+        for y in range(background.height()):
+            for x in range(background.width()):
+                background.setPixelColor(x, y, QColor(x, y, 37))
+        document = Document(background, QRect(10, 15, 20, 10))
+
+        exported = document.export()
+
+        self.assertEqual(document.bounds, QRect(0, 0, 100, 80))
+        self.assertEqual(exported.size(), QSize(40, 20))
+        self.assertEqual(exported.devicePixelRatio(), 2)
+        self.assertEqual(exported.pixelColor(0, 0), background.pixelColor(20, 30))
+        self.assertEqual(exported.pixelColor(39, 19), background.pixelColor(59, 49))
+
+    def test_hidpi_annotations_render_at_physical_resolution(self):
+        background = QImage(200, 160, QImage.Format.Format_ARGB32)
+        background.setDevicePixelRatio(2)
+        background.fill(QColor("white"))
+        document = Document(background)
+        document.commit(shape("filled_rectangle", (10, 10), (30, 30), color="#ff0000"))
+
+        rendered = document.render()
+
+        self.assertEqual(rendered.size(), QSize(200, 160))
+        self.assertEqual(rendered.devicePixelRatio(), 2)
+        self.assertEqual(rendered.pixelColor(40, 40), QColor("red"))
+        self.assertEqual(rendered.pixelColor(10, 10), QColor("white"))
+
+    def test_fractional_scale_crop_uses_consistent_pixel_boundaries(self):
+        background = QImage(125, 100, QImage.Format.Format_ARGB32)
+        background.setDevicePixelRatio(1.25)
+        background.fill(QColor("white"))
+
+        first = Document(background, QRect(0, 0, 1, 10)).export()
+        second = Document(background, QRect(1, 0, 1, 10)).export()
+
+        self.assertEqual(first.size(), QSize(1, 13))
+        self.assertEqual(second.size(), QSize(2, 13))
+        self.assertEqual(first.width() + second.width(), 3)
 
     def test_export_rejects_empty_or_completely_outside_selection(self):
         for selection in (QRect(), QRect(10, 10, 0, 5), QRect(120, 0, 10, 10)):

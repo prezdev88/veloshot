@@ -2,6 +2,7 @@
 
 import argparse
 from datetime import datetime
+from math import floor
 import os
 import re
 from pathlib import Path
@@ -15,6 +16,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog, QHBoxLayout
                                QSystemTrayIcon, QVBoxLayout, QWidget)
 
 from . import __version__
+from .document import crop_image, image_logical_rect
 from .editor import CaptureEditor, PinnedImage, save_image
 from .icons import icon
 from .settings import Settings, SettingsDialog
@@ -43,12 +45,17 @@ def acquire_screen(app, screen_index=None):
     geometry = QRect()
     for screen in screens:
         geometry = geometry.united(screen.geometry())
-    image = QImage(geometry.size(), QImage.Format.Format_ARGB32)
+    captures = [(screen, screen.grabWindow(0).toImage()) for screen in screens]
+    ratio = max((frame.devicePixelRatio() for _, frame in captures), default=1.0)
+    pixel_size = geometry.size()
+    pixel_size.setWidth(floor(pixel_size.width() * ratio + 0.5))
+    pixel_size.setHeight(floor(pixel_size.height() * ratio + 0.5))
+    image = QImage(pixel_size, QImage.Format.Format_ARGB32)
+    image.setDevicePixelRatio(ratio)
     image.fill(QColor("#101018"))
     painter = QPainter(image)
     try:
-        for screen in screens:
-            frame = screen.grabWindow(0).toImage()
+        for screen, frame in captures:
             if frame.isNull():
                 raise RuntimeError("El escritorio no permite capturar la pantalla. Usa una sesión X11.")
             destination = QRect(screen.geometry())
@@ -242,7 +249,8 @@ class Controller:
             if self.args.last_region:
                 region = self.settings.get("last_region", "")
             if region:
-                editor.document.selection = parse_region(region).translated(-geometry.topLeft()).intersected(image.rect())
+                editor.document.selection = parse_region(region).translated(
+                    -geometry.topLeft()).intersected(editor.document.bounds)
                 if editor.document.selection.isEmpty():
                     editor.close()
                     raise ValueError("La región está fuera de la pantalla.")
@@ -344,10 +352,11 @@ class Controller:
             index = self.monitor_index() if self.args.mode == "screen" else None
             image, geometry = acquire_screen(self.app, index)
             if self.args.region:
-                area = parse_region(self.args.region).translated(-geometry.topLeft()).intersected(image.rect())
+                area = parse_region(self.args.region).translated(
+                    -geometry.topLeft()).intersected(image_logical_rect(image))
                 if area.isEmpty():
                     raise ValueError("La región está fuera de la pantalla.")
-                image = image.copy(area)
+                image = crop_image(image, area)
             if self.args.raw:
                 write_png(image)
             if self.args.clipboard:

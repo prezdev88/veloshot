@@ -94,7 +94,7 @@ class PinnedImage(QLabel):
 
     def refresh(self):
         self.setPixmap(QPixmap.fromImage(self.image))
-        self.resize(self.image.size())
+        self.resize(self.image.deviceIndependentSize().toSize())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -324,7 +324,7 @@ class CaptureEditor(QWidget):
             self.panel.raise_()
 
     def select_all(self):
-        self.document.selection = self.document.background.rect()
+        self.document.selection = self.document.bounds
         self.selection_changed()
 
     def selection_changed(self):

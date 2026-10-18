@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
-from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSettings, Qt
+from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSize, QSettings, Qt
 from PySide6.QtGui import QColor, QImage, QPixmap
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QPushButton
@@ -53,11 +53,13 @@ class MonitorTests(unittest.TestCase):
         self.addCleanup(active.stop)
 
     @staticmethod
-    def screen(name, geometry, color):
-        image = QImage(geometry.size(), QImage.Format.Format_ARGB32)
+    def screen(name, geometry, color, ratio=1):
+        size = QSize(round(geometry.width() * ratio), round(geometry.height() * ratio))
+        image = QImage(size, QImage.Format.Format_ARGB32)
+        image.setDevicePixelRatio(ratio)
         image.fill(QColor(color))
         return SimpleNamespace(name=lambda: name, geometry=lambda: QRect(geometry),
-                               grabWindow=lambda _: QPixmap.fromImage(image))
+                               grabWindow=lambda _: QPixmap.fromImage(image), source=image)
 
     def tearDown(self):
         for window in list(self.controller.windows):
@@ -123,6 +125,23 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(image.width(), 1700)
         self.assertEqual(image.pixelColor(799, 100), QColor("red"))
         self.assertEqual(image.pixelColor(800, 100), QColor("blue"))
+
+    def test_hidpi_capture_and_export_keep_native_pixels(self):
+        screen = self.screen("eDP-1", QRect(0, 0, 120, 80), "white", ratio=2)
+        screen.source.setPixelColor(100, 50, QColor("red"))
+        screen.source.setPixelColor(101, 50, QColor("blue"))
+        self.screens[:] = [screen]
+
+        self.controller.show_capture(select_all=True, screen=screen)
+        editor = self.editor()
+        image = editor.result()
+
+        self.assertEqual(editor.geometry(), QRect(0, 0, 120, 80))
+        self.assertEqual(editor.document.bounds, QRect(0, 0, 120, 80))
+        self.assertEqual(image.size(), QSize(240, 160))
+        self.assertEqual(image.devicePixelRatio(), 2)
+        self.assertEqual(image.pixelColor(100, 50), QColor("red"))
+        self.assertEqual(image.pixelColor(101, 50), QColor("blue"))
 
     def test_gui_prompt_selection_reaches_capture(self):
         with patch("veloshot.__main__.QInputDialog.getItem", side_effect=lambda *args: (args[3][2], True)):
