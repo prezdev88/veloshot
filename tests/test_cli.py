@@ -20,6 +20,10 @@ from veloshot.editor import PinnedImage
 
 
 class RegionParsingTests(unittest.TestCase):
+    def test_background_modes_parse_without_capture_options(self):
+        self.assertEqual(parse_args(["tray"]).mode, "tray")
+        self.assertEqual(parse_args(["no-gui"]).mode, "no-gui")
+
     def test_negative_desktop_origins_and_zero_are_valid(self):
         self.assertEqual(parse_region("640x480-1920+0"), QRect(-1920, 0, 640, 480))
         self.assertEqual(parse_region("1x1+0-100"), QRect(0, -100, 1, 1))
@@ -54,6 +58,22 @@ class RegionParsingTests(unittest.TestCase):
             with self.assertRaises(SystemExit) as error:
                 parse_args(["gui", "--region", "0x20+0+0"])
         self.assertEqual(error.exception.code, 2)
+
+
+class StartupModeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.app = QApplication.instance() or QApplication([])
+
+    def test_tray_modes_do_not_open_launcher(self):
+        for mode in ("tray", "no-gui"):
+            with self.subTest(mode=mode):
+                controller = Controller(self.app, parse_args([mode]))
+                with patch.object(controller, "setup_tray") as setup_tray, \
+                        patch.object(controller, "show_launcher") as show_launcher:
+                    controller.start()
+                setup_tray.assert_called_once_with()
+                show_launcher.assert_not_called()
 
 
 class AcceptSelectionTests(unittest.TestCase):

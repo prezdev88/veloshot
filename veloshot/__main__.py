@@ -178,13 +178,13 @@ class Controller:
             self.capture(delay_ms=self.args.delay)
         elif mode == "edit":
             self.open_image(self.args.image)
+        elif mode in ("tray", "no-gui"):
+            self.setup_tray()
         else:
             self.setup_tray()
             self.show_launcher()
 
     def setup_tray(self):
-        if not QSystemTrayIcon.isSystemTrayAvailable():
-            return
         self.tray = QSystemTrayIcon(icon("capture", "#b87bf1"), self.app)
         self.tray.setToolTip("VeloShot · Capturar pantalla")
         menu = QMenu()
@@ -432,6 +432,8 @@ def parse_args(argv=None):
         if mode == "edit":
             sub.add_argument("image", help="Ruta de la imagen")
     subs.add_parser("launcher", help="Abrir el lanzador")
+    subs.add_parser("tray", aliases=["no-gui"],
+                    help="Iniciar en segundo plano sin abrir una ventana")
     subs.add_parser("config", help="Configurar VeloShot")
     parser.set_defaults(path=None, delay=0, clipboard=False, raw=False, pin=False, region=None,
                         last_region=False, print_geometry=False, accept_on_select=False, edit=False)
@@ -448,7 +450,8 @@ def parse_args(argv=None):
 
 def main(argv=None):
     args = parse_args(argv)
-    if os.environ.get("XDG_SESSION_TYPE") == "wayland" and args.mode in (None, "gui", "full", "screen", "launcher"):
+    if os.environ.get("XDG_SESSION_TYPE") == "wayland" and args.mode in (
+            None, "gui", "full", "screen", "launcher", "tray", "no-gui"):
         print("VeloShot: la captura del escritorio requiere una sesión X11; el portal Wayland aún no está implementado.", file=sys.stderr)
         return 2
     app = QApplication([sys.argv[0]])

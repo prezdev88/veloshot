@@ -36,6 +36,14 @@ Para asignarlo a la tecla Impr Pant en i3, usa el ejecutable global o su ruta ab
 bindsym Print exec --no-startup-id /usr/local/bin/veloshot gui
 ```
 
+Para iniciar VeloShot junto con i3 sin abrir ninguna ventana, añade también:
+
+```text
+exec --no-startup-id /usr/local/bin/veloshot tray
+```
+
+`veloshot no-gui` es un alias equivalente de `veloshot tray`. Ambos mantienen VeloShot en segundo plano y muestran únicamente su icono de bandeja cuando el escritorio dispone de una.
+
 El instalador no modifica la configuración de i3. Después de editarla, recárgala con `$mod+Shift+c`.
 
 En Debian o Ubuntu, si faltan las bibliotecas de Qt, instálalas antes de repetir `sudo ./install.sh`:
@@ -172,7 +180,7 @@ La configuración propia usa `QSettings("VeloShot", "VeloShot")`. Al iniciar por
 
 ## Verificación y análisis
 
-Se verificaron **55 pruebas automatizadas** y **11 escenarios del ejecutable en una pantalla X11 virtual**, incluida la transferencia de la imagen del portapapeles entre procesos. También se comprobó el selector con dos pantallas X11 virtuales de distinta resolución: captura los píxeles elegidos, abre el editor en la pantalla correspondiente y copia su imagen.
+Se verificaron **57 pruebas automatizadas** y **11 escenarios del ejecutable en una pantalla X11 virtual**, incluida la transferencia de la imagen del portapapeles entre procesos. También se comprobó el selector con dos pantallas X11 virtuales de distinta resolución: captura los píxeles elegidos, abre el editor en la pantalla correspondiente y copia su imagen.
 
 También se verificó el lanzador con i3 en un escritorio virtual: el editor cubre toda la pantalla, copia la captura completa y permite seleccionar un área cerca del borde inferior derecho. El editor de captura evita que el gestor de ventanas lo reduzca a un mosaico.
 

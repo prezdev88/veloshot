@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "veloshot"
-version = "1.0.0"
+version = "1.1.0"
 description = "Independent Qt screenshot and annotation application inspired by Flameshot"
 readme = "README.md"
 license = "MIT"
