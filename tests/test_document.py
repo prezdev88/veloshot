@@ -207,14 +207,16 @@ class DocumentTests(unittest.TestCase):
         self.assertEqual(rendered.pixelColor(40, 35), center)
         self.assertEqual(rendered.pixelColor(40, 28), QColor("white"))
 
-    def test_text_produces_ink_below_and_right_of_anchor(self):
+    def test_text_produces_ink_near_anchor(self):
         background = canvas()
         document = Document(background)
         document.commit(shape("text", (20, 20), (20, 20), text="Test", color="#000000"))
         rendered = document.render()
         ink = changed_pixels(rendered, background)
         self.assertGreater(len(ink), 20)
-        self.assertTrue(all(x >= 20 and y >= 20 for x, y in ink))
+        # Glyph bearings and antialiasing may extend one pixel left of the
+        # layout rectangle depending on the platform's Sans Serif font.
+        self.assertTrue(all(x >= 19 and y >= 20 for x, y in ink))
         self.assertTrue(all(x < 70 and y < 50 for x, y in ink))
 
     def test_counter_draws_colored_badge_and_white_number(self):
