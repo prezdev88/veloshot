@@ -12,6 +12,39 @@ VeloShot es un proyecto independiente y no está afiliado con Flameshot.
 
 El editor puede abrir imágenes existentes en cualquier plataforma compatible con PySide6, pero la captura directa del escritorio actualmente depende de X11.
 
+## Instalación recomendada
+
+Descarga o clona el repositorio y ejecuta el instalador desde su carpeta:
+
+```bash
+git clone https://github.com/prezdev88/veloshot.git
+cd veloshot
+./install.sh
+```
+
+El instalador trabaja únicamente dentro de tu usuario y no necesita `sudo`. Crea un entorno aislado en `~/.local/share/veloshot`, instala el comando en `~/.local/bin/veloshot` y añade VeloShot al menú de aplicaciones con su icono. Después puedes borrar la carpeta del código fuente y ejecutar:
+
+```bash
+veloshot launcher
+```
+
+También puedes buscar **VeloShot** en el menú de aplicaciones. Si la terminal todavía no reconoce el comando, abre una sesión nueva o añade `~/.local/bin` a `PATH`; la entrada del menú utiliza una ruta absoluta y seguirá funcionando.
+
+En Debian o Ubuntu, si faltan las bibliotecas de Qt, instálalas antes de repetir `./install.sh`:
+
+```bash
+sudo apt update
+sudo apt install python3 python3-venv libdbus-1-3 libegl1 libfontconfig1 libgl1 libglib2.0-0 libxkbcommon0
+```
+
+Para actualizar una instalación existente, descarga los cambios del repositorio y vuelve a ejecutar `./install.sh`. Para desinstalarla:
+
+```bash
+./uninstall.sh
+```
+
+El desinstalador conserva las preferencias personales de VeloShot.
+
 ## Instalar y ejecutar desde el código fuente
 
 Después de descargar el ZIP del proyecto o clonarlo con Git, abre una terminal dentro de su carpeta y crea un entorno virtual:
